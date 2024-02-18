@@ -1,21 +1,31 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, ImageBackground, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { getAuth, signInAnonymously } from 'firebase/auth'; // Import Firebase authentication methods
 
 const Start = () => {
-    const navigation = useNavigation(); // Use useNavigation hook to get navigation object
+    const navigation = useNavigation();
     const [name, setName] = useState('');
-    const [selectedColor, setSelectedColor] = useState('#FFFFFF'); // Default color
+    const [selectedColor, setSelectedColor] = useState('#FFFFFF');
     const image = require('../assets/bg.png');
+    const auth = getAuth();
 
     const handleStartChat = () => {
         if (name.trim() !== '') {
-            // Navigate to the chat screen with the provided name and selected color
-            navigation.navigate('Chat', { name, selectedColor });
+            // Log in the user anonymously
+            signInAnonymously(auth)
+                .then((userCredential) => {
+                    const userId = userCredential.user.uid;
+                    // Navigate to the chat screen with the provided name and selected color
+                    navigation.navigate('Chat', { name, selectedColor, userId });
+                })
+                .catch(error => {
+                    console.error('Error signing in anonymously:', error);
+                });
         }
     };
 
-    const colorOptions = ['#FFFFFF', '#FFD700', '#32CD32', '#87CEEB']; // more colors
+    const colorOptions = ['#FFFFFF', '#FFD700', '#32CD32', '#87CEEB'];
 
     return (
         <ImageBackground source={image} style={styles.background}>
